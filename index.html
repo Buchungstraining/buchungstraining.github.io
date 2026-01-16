@@ -1,0 +1,970 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Buchungssatz-Training (interaktiv)</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#121a33;
+      --muted:#8ea0c7;
+      --text:#e9eeff;
+      --good:#2dd4bf;
+      --bad:#fb7185;
+      --warn:#fbbf24;
+      --line:rgba(255,255,255,.10);
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(45,212,191,.18), transparent 55%),
+                  radial-gradient(900px 700px at 85% 15%, rgba(99,102,241,.20), transparent 55%),
+                  radial-gradient(900px 700px at 40% 90%, rgba(251,113,133,.14), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .app{
+      width:min(980px, 100%);
+      display:grid;
+      gap:16px;
+    }
+    header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      padding:6px 2px;
+    }
+    .title h1{
+      margin:0;
+      font-size: clamp(20px, 2.3vw, 30px);
+      letter-spacing:.2px;
+    }
+    .title p{
+      margin:6px 0 0;
+      color:var(--muted);
+      line-height:1.35;
+      max-width:60ch;
+    }
+    .pillbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+    .pill{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:13px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      user-select:none;
+    }
+    .pill b{font-weight:650}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap:16px;
+    }
+    @media (max-width: 880px){
+      .grid{grid-template-columns:1fr}
+      .pillbar{justify-content:flex-start}
+    }
+    .card{
+      background: rgba(18,26,51,.78);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .inner{padding:18px}
+    .card h2{
+      margin:0 0 10px;
+      font-size:18px;
+    }
+    .qmeta{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .qbox{
+      margin-top:14px;
+      padding:14px;
+      border-radius: 14px;
+      border:1px dashed rgba(255,255,255,.16);
+      background: rgba(255,255,255,.03);
+      line-height:1.35;
+      font-size:16px;
+    }
+    .amount{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      margin-top:10px;
+      font-size:14px;
+      color:var(--muted);
+    }
+    .amount code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background: rgba(255,255,255,.06);
+      padding:3px 8px;
+      border-radius: 999px;
+      border:1px solid var(--line);
+      color:var(--text);
+    }
+    .inputrow{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    textarea{
+      width:100%;
+      min-height:78px;
+      resize:vertical;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(9,13,28,.55);
+      color:var(--text);
+      padding:12px 12px;
+      font-size:15px;
+      line-height:1.35;
+      outline:none;
+    }
+    textarea:focus{border-color: rgba(45,212,191,.45); box-shadow: 0 0 0 4px rgba(45,212,191,.12);}
+    .btnrow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    button{
+      border-radius: 999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 14px;
+      font-weight:650;
+      font-size:14px;
+      cursor:pointer;
+    }
+    button:hover{background: rgba(255,255,255,.10)}
+    button.primary{
+      background: rgba(45,212,191,.16);
+      border-color: rgba(45,212,191,.35);
+    }
+    button.primary:hover{background: rgba(45,212,191,.22)}
+    button.danger{
+      background: rgba(251,113,133,.14);
+      border-color: rgba(251,113,133,.35);
+    }
+    button.danger:hover{background: rgba(251,113,133,.20)}
+    button:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+    .feedback{
+      margin-top:12px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      padding:12px;
+      background: rgba(255,255,255,.04);
+      display:none;
+    }
+    .feedback.show{display:block}
+    .feedback.good{border-color: rgba(45,212,191,.35); background: rgba(45,212,191,.08)}
+    .feedback.bad{border-color: rgba(251,113,133,.35); background: rgba(251,113,133,.08)}
+    .feedback.warn{border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.08)}
+    .feedback .headline{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      font-weight:750;
+      margin-bottom:6px;
+    }
+    .small{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:13px;
+      white-space:pre-wrap;
+    }
+    .side .statgrid{
+      display:grid;
+      gap:12px;
+    }
+    .kpi{
+      padding:14px;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    .kpi .label{color:var(--muted); font-size:12px}
+    .kpi .value{font-size:22px; font-weight:800; margin-top:3px}
+    .kpi .value small{font-size:14px; color:var(--muted); font-weight:650}
+    .select{
+      display:grid;
+      gap:10px;
+      margin-top:8px;
+    }
+    select{
+      width:100%;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background: rgba(9,13,28,.55);
+      color:var(--text);
+      padding:10px 10px;
+      font-weight:650;
+      outline:none;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid var(--line);
+      border-bottom-color: rgba(255,255,255,.2);
+      background: rgba(255,255,255,.04);
+      padding:3px 6px;
+      border-radius: 8px;
+    }
+    .footerhint{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .divider{
+      height:1px;
+      background: var(--line);
+      margin:14px 0;
+    }
+    details{
+      border:1px solid var(--line);
+      border-radius: 16px;
+      padding:10px 12px;
+      background: rgba(255,255,255,.03);
+    }
+    summary{
+      cursor:pointer;
+      font-weight:700;
+    }
+    ul{margin:10px 0 0; padding-left:18px; color:var(--muted); line-height:1.45}
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--muted);
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title">
+        <h1>Buchungssatz-Training</h1>
+        <p>Interaktiv, sofortiges Feedback, mit steigender Schwierigkeit. Du gibst deine Antwort als <b>Soll an Haben</b> (mit Betrag) ein, und die Maschine urteilt gnadenlos.</p>
+      </div>
+      <div class="pillbar">
+        <div class="pill"><span>Level</span> <b id="pillLevel">1</b></div>
+        <div class="pill"><span>Punkte</span> <b id="pillScore">0</b></div>
+        <div class="pill"><span>Serie</span> <b id="pillStreak">0</b></div>
+        <div class="pill"><span>Genauigkeit</span> <b id="pillAcc">0%</b></div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="inner">
+          <h2>Aufgabe <span class="tag" id="tagTopic">Basics</span></h2>
+          <div class="qmeta">
+            <span id="metaProgress">0/0</span>
+            <span>•</span>
+            <span>Format: <span class="kbd">Soll an Haben, Betrag</span></span>
+            <span>•</span>
+            <span class="kbd">Enter</span> prüfen · <span class="kbd">Shift</span>+<span class="kbd">Enter</span> neue Zeile</span>
+          </div>
+
+          <div class="qbox" id="qText">Klick auf „Start“, stell ein Level ein, und los.</div>
+          <div class="amount" id="qAmountWrap" style="display:none;">
+            <span>Betrag:</span> <code id="qAmount">CHF 0</code>
+          </div>
+
+          <div class="inputrow">
+            <textarea id="answer" placeholder="Beispiel: Warenaufwand an Bank, 1200"></textarea>
+            <div class="btnrow">
+              <button class="primary" id="btnCheck">Prüfen</button>
+              <button id="btnHint">Tipp</button>
+              <button id="btnShowSolution">Lösung zeigen</button>
+              <button class="danger" id="btnSkip">Überspringen</button>
+              <button id="btnNext" disabled>Nächste</button>
+            </div>
+          </div>
+
+          <div class="feedback" id="feedback">
+            <div class="headline" id="fbHeadline">…</div>
+            <div class="small" id="fbText">…</div>
+            <div class="divider"></div>
+            <div class="small"><b>Erwartet:</b></div>
+            <div class="mono" id="fbExpected"></div>
+            <div class="small" style="margin-top:8px;"><b>Dein Input (normalisiert):</b></div>
+            <div class="mono" id="fbParsed"></div>
+          </div>
+
+          <div class="footerhint">
+            Pro-Tipp: Aufwand & Aktiv nehmen zu im <b>Soll</b>. Ertrag & Passiv nehmen zu im <b>Haben</b>. Ja, das ist nervig. Nein, es ändert sich nicht.
+          </div>
+
+          <div style="margin-top:14px;">
+            <details>
+              <summary>Welche Kontobezeichnungen akzeptiert das Tool?</summary>
+              <ul>
+                <li><b>Kasse</b>, <b>Bank</b></li>
+                <li><b>Warenaufwand</b> (auch: Wareneinkauf), <b>Warenertrag</b> (auch: Warenverkauf)</li>
+                <li><b>Forderungen LL</b> (auch: Debitoren), <b>Verbindlichkeiten LL</b> (auch: Kreditoren)</li>
+                <li><b>Mietaufwand</b>, <b>Lohnaufwand</b></li>
+                <li><b>Eigenkapital</b>, <b>Privat</b> (Privatentnahme/Privateinlage)</li>
+                <li><b>Maschinen</b>, <b>Abschreibungen</b> (als Aufwand)</li>
+                <li><b>Vorsteuer</b>, <b>Umsatzsteuer</b> (für MWST-Aufgaben im Level 3)</li>
+              </ul>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card side">
+        <div class="inner">
+          <h2>Steuerung</h2>
+          <div class="select">
+            <label class="small" for="levelSel"><b>Schwierigkeit</b></label>
+            <select id="levelSel">
+              <option value="1">Level 1: Basics (Kasse/Bank, Aufwand/Ertrag)</option>
+              <option value="2">Level 2: Rechnung & Ausgleich (Ford./Verb.)</option>
+              <option value="3">Level 3: MWST & gemischte Fälle</option>
+              <option value="mix">Mix: Alles durcheinander</option>
+            </select>
+
+            <label class="small" for="modeSel"><b>Modus</b></label>
+            <select id="modeSel">
+              <option value="infinite">Endlos (random)</option>
+              <option value="set10">10 Aufgaben</option>
+              <option value="set20">20 Aufgaben</option>
+            </select>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="statgrid">
+            <div class="kpi">
+              <div class="label">Versuche</div>
+              <div class="value"><span id="kpiAttempts">0</span> <small>(inkl. Skip)</small></div>
+            </div>
+            <div class="kpi">
+              <div class="label">Korrekt</div>
+              <div class="value"><span id="kpiCorrect">0</span></div>
+            </div>
+            <div class="kpi">
+              <div class="label">Falsch</div>
+              <div class="value"><span id="kpiWrong">0</span></div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="btnrow">
+            <button class="primary" id="btnStart">Start / Reset</button>
+            <button id="btnExport">Ergebnis kopieren</button>
+          </div>
+
+          <div class="footerhint" id="exportInfo" style="display:none; margin-top:10px;"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+
+  function chf(n){
+    const fixed = (Math.round(n*100)/100).toFixed(2);
+    const parts = fixed.split(".");
+    const int = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, "’");
+    return `CHF ${int}.${parts[1]}`;
+  }
+  function round2(n){ return Math.round(n*100)/100; }
+
+  function normalizeText(s){
+    return (s||"")
+      .toLowerCase()
+      .replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")
+      .replace(/chf/g,"")
+      .replace(/[(),;:]/g," ")
+      .replace(/\s+/g," ")
+      .trim();
+  }
+  function extractAmount(raw){
+    const s = raw.replace(/’/g,"'");
+    const m = s.match(/(-?\d[\d\s'’]*([.,]\d{1,2})?)/g);
+    if(!m) return null;
+    const last = m[m.length-1];
+    let x = last.replace(/[\s'’]/g,"");
+    x = x.replace(",",".");
+    const val = Number(x);
+    return Number.isFinite(val) ? val : null;
+  }
+
+  const accountMap = new Map([
+    ["kasse","Kasse"],
+    ["bank","Bank"],
+    ["post","Bank"], ["postkonto","Bank"],
+    ["warenaufwand","Warenaufwand"],
+    ["wareneinkauf","Warenaufwand"],
+    ["wareneinkaeufe","Warenaufwand"],
+    ["warenertrag","Warenertrag"],
+    ["warenverkauf","Warenertrag"],
+    ["verkauf","Warenertrag"],
+    ["forderungen","Forderungen LL"],
+    ["forderungen ll","Forderungen LL"],
+    ["debitoren","Forderungen LL"],
+    ["debitor","Forderungen LL"],
+    ["debitore","Forderungen LL"],
+    ["verbindlichkeiten","Verbindlichkeiten LL"],
+    ["verbindlichkeiten ll","Verbindlichkeiten LL"],
+    ["kreditoren","Verbindlichkeiten LL"],
+    ["kreditor","Verbindlichkeiten LL"],
+    ["creditoren","Verbindlichkeiten LL"],
+    ["eigenkapital","Eigenkapital"],
+    ["kapital","Eigenkapital"],
+    ["privat","Privat"],
+    ["privateinlage","Privat"],
+    ["privatentnahme","Privat"],
+    ["miete","Mietaufwand"],
+    ["mietaufwand","Mietaufwand"],
+    ["lohn","Lohnaufwand"],
+    ["loehne","Lohnaufwand"],
+    ["lohnaufwand","Lohnaufwand"],
+    ["abschreibungen","Abschreibungen"],
+    ["abschreibung","Abschreibungen"],
+    ["maschinen","Maschinen"],
+    ["maschine","Maschinen"],
+    ["vorsteuer","Vorsteuer"],
+    ["mwst vorsteuer","Vorsteuer"],
+    ["umsatzsteuer","Umsatzsteuer"],
+    ["mwst umsatzsteuer","Umsatzsteuer"],
+    ["mwst","Umsatzsteuer"],
+  ]);
+
+  function normalizeAccountToken(token){
+    const t = normalizeText(token);
+    if(!t) return null;
+    if(accountMap.has(t)) return accountMap.get(t);
+
+    const cleaned = t
+      .replace(/\b(an|im|in|ins|auf|gegen|per|via|mit|bar|ueber|über|von|zu|der|die|das|den|dem)\b/g,"")
+      .replace(/\s+/g," ")
+      .trim();
+
+    if(accountMap.has(cleaned)) return accountMap.get(cleaned);
+
+    if(cleaned.includes("kasse")) return "Kasse";
+    if(cleaned.includes("bank")) return "Bank";
+    if(cleaned.includes("waren") && cleaned.includes("aufwand")) return "Warenaufwand";
+    if(cleaned.includes("waren") && cleaned.includes("ertrag")) return "Warenertrag";
+    if(cleaned.includes("debit")) return "Forderungen LL";
+    if(cleaned.includes("kredit")) return "Verbindlichkeiten LL";
+    if(cleaned.includes("forderung")) return "Forderungen LL";
+    if(cleaned.includes("verbind")) return "Verbindlichkeiten LL";
+    if(cleaned.includes("miet")) return "Mietaufwand";
+    if(cleaned.includes("lohn")) return "Lohnaufwand";
+    if(cleaned.includes("eigenkap")) return "Eigenkapital";
+    if(cleaned.includes("privat")) return "Privat";
+    if(cleaned.includes("maschine")) return "Maschinen";
+    if(cleaned.includes("abschreib")) return "Abschreibungen";
+    if(cleaned.includes("vorsteuer")) return "Vorsteuer";
+    if(cleaned.includes("umsatzsteuer") || cleaned.includes("mwst")) return "Umsatzsteuer";
+
+    return token.trim();
+  }
+
+  function parseAnswer(raw){
+    const norm = normalizeText(raw);
+    const anIndex = norm.indexOf(" an ");
+    let left = "", right = "";
+    if(anIndex >= 0){
+      left = norm.slice(0, anIndex).trim();
+      right = norm.slice(anIndex + 4).trim();
+    } else {
+      const arrow = norm.indexOf("->");
+      const slash = norm.indexOf("/");
+      if(arrow >= 0){
+        left = norm.slice(0, arrow).trim();
+        right = norm.slice(arrow+2).trim();
+      } else if(slash >= 0){
+        left = norm.slice(0, slash).trim();
+        right = norm.slice(slash+1).trim();
+      } else {
+        left = norm;
+        right = "";
+      }
+    }
+
+    left = left.replace(/^soll\s+/,"");
+    right = right.replace(/^haben\s+/,"");
+
+    function splitAccounts(side){
+      const tmp = side
+        .replace(/\bund\b/g, "+")
+        .replace(/\s*\+\s*/g, "+")
+        .trim();
+
+      if(!tmp) return [];
+      return tmp.split("+").map(x => x.trim()).filter(Boolean).map(normalizeAccountToken);
+    }
+
+    const soll = splitAccounts(left);
+    const haben = splitAccounts(right.replace(/-?\d[\d\s'’]*([.,]\d{1,2})?/g, "").trim());
+    const amount = extractAmount(raw);
+
+    return { soll, haben, amount, norm };
+  }
+
+  function sameMultiset(a,b){
+    if(a.length !== b.length) return false;
+    const ca = new Map();
+    for(const x of a) ca.set(x, (ca.get(x)||0)+1);
+    for(const x of b){
+      if(!ca.has(x)) return false;
+      ca.set(x, ca.get(x)-1);
+      if(ca.get(x)===0) ca.delete(x);
+    }
+    return ca.size===0;
+  }
+
+  const VAT = 0.077;
+
+  function vatSplit(gross){
+    const net = gross / (1+VAT);
+    const tax = gross - net;
+    return { net: round2(net), tax: round2(tax), gross: round2(gross) };
+  }
+
+  const Q = [
+    { level: 1, topic: "Basics", text: "Du zahlst die Miete bar.", amount: 800,
+      solutions: [{ soll:["Mietaufwand"], haben:["Kasse"], amount:800,
+        hint:"Miete ist Aufwand (nimmt zu) → Soll. Barzahlung vermindert Kasse → Haben.",
+        explain:"Aufwand steigt im Soll. Kasse sinkt im Haben." }]
+    },
+    { level: 1, topic: "Basics", text: "Du kaufst Waren gegen Bank (sofort bezahlt).", amount: 1200,
+      solutions: [{ soll:["Warenaufwand"], haben:["Bank"], amount:1200,
+        hint:"Wareneinkauf = Aufwand. Bezahlt über Bank = Bank nimmt ab.",
+        explain:"Warenaufwand im Soll, Bank im Haben." }]
+    },
+    { level: 1, topic: "Basics", text: "Du verkaufst Waren gegen bar.", amount: 450,
+      solutions: [{ soll:["Kasse"], haben:["Warenertrag"], amount:450,
+        hint:"Barverkauf: Kasse nimmt zu (Soll). Verkaufsertrag steigt (Haben).",
+        explain:"Aktivkonto (Kasse) steigt im Soll, Ertrag steigt im Haben." }]
+    },
+    { level: 1, topic: "Basics", text: "Du zahlst Lohn über Bank.", amount: 1500,
+      solutions: [{ soll:["Lohnaufwand"], haben:["Bank"], amount:1500,
+        hint:"Lohn = Aufwand (Soll). Bankzahlung = Bank nimmt ab (Haben).",
+        explain:"Aufwand Soll, Bank Haben." }]
+    },
+    { level: 1, topic: "Basics", text: "Du legst privat Geld in die Kasse ein (Privateinlage).", amount: 300,
+      solutions: [{ soll:["Kasse"], haben:["Privat"], amount:300,
+        hint:"Kasse steigt (Soll). Privateinlage erhöht Privatkonto im Haben (Eigenmittel-Zufuhr).",
+        explain:"Aktiv steigt im Soll; Gegenkonto Privat im Haben." }]
+    },
+    { level: 1, topic: "Basics", text: "Du entnimmst privat Bargeld aus der Kasse (Privatentnahme).", amount: 120,
+      solutions: [{ soll:["Privat"], haben:["Kasse"], amount:120,
+        hint:"Entnahme: Kasse sinkt (Haben). Privatkonto wird im Soll belastet.",
+        explain:"Privatentnahme: Privat Soll an Kasse Haben." }]
+    },
+
+    { level: 2, topic: "Rechnung", text: "Du verkaufst Waren auf Rechnung (Kunde zahlt später).", amount: 900,
+      solutions: [{ soll:["Forderungen LL"], haben:["Warenertrag"], amount:900,
+        hint:"Auf Rechnung: Forderungen steigen (Soll). Verkaufsertrag (Haben).",
+        explain:"Forderungen = Aktivkonto (Sollmehrung). Ertrag im Haben." }]
+    },
+    { level: 2, topic: "Rechnung", text: "Du kaufst Waren auf Rechnung (Lieferant stellt Rechnung).", amount: 640,
+      solutions: [{ soll:["Warenaufwand"], haben:["Verbindlichkeiten LL"], amount:640,
+        hint:"Einkauf = Aufwand (Soll). Noch nicht bezahlt → Verbindlichkeiten steigen (Haben).",
+        explain:"Aufwand Soll, Verbindlichkeiten Haben." }]
+    },
+    { level: 2, topic: "Ausgleich", text: "Ein Kunde begleicht eine offene Rechnung über Bank.", amount: 900,
+      solutions: [{ soll:["Bank"], haben:["Forderungen LL"], amount:900,
+        hint:"Geldeingang: Bank steigt (Soll). Forderung verschwindet (Haben).",
+        explain:"Aktivtausch: Bank +, Forderungen -." }]
+    },
+    { level: 2, topic: "Ausgleich", text: "Du bezahlst eine Lieferantenrechnung über Bank.", amount: 600,
+      solutions: [{ soll:["Verbindlichkeiten LL"], haben:["Bank"], amount:600,
+        hint:"Bezahlung: Verbindlichkeiten nehmen ab (Soll). Bank sinkt (Haben).",
+        explain:"Passiv nimmt ab im Soll; Bank nimmt ab im Haben." }]
+    },
+    { level: 2, topic: "Investition", text: "Du kaufst eine Maschine und zahlst über Bank.", amount: 5000,
+      solutions: [{ soll:["Maschinen"], haben:["Bank"], amount:5000,
+        hint:"Maschine = Aktivkonto (nimmt zu im Soll). Bank zahlt = Bank nimmt ab im Haben.",
+        explain:"Aktivkonto steigt im Soll, Bank sinkt im Haben." }]
+    },
+    { level: 2, topic: "Abschluss", text: "Du buchst eine Abschreibung auf Maschinen (vereinfachte Darstellung als Aufwand).", amount: 400,
+      solutions: [{ soll:["Abschreibungen"], haben:["Maschinen"], amount:400,
+        hint:"Abschreibung als Aufwand im Soll, Wert der Maschine sinkt im Haben.",
+        explain:"Aufwand steigt im Soll; Aktivkonto Maschinen sinkt im Haben." }]
+    },
+
+    { level: 3, topic: "MWST", text: "Du kaufst Waren über Bank, Betrag ist inkl. 7.7% MWST.", amount: 1077,
+      solutions: (function(){
+        const v = vatSplit(1077);
+        return [{ soll:["Warenaufwand","Vorsteuer"], haben:["Bank"], amount:v.gross,
+          hint:"Einkauf inkl. MWST: Warenaufwand (netto) + Vorsteuer (MWST) im Soll; Bank im Haben.",
+          explain:`Brutto ${chf(v.gross)} = Netto ${chf(v.net)} + Vorsteuer ${chf(v.tax)}. Daher: Warenaufwand + Vorsteuer an Bank.` }];
+      })()
+    },
+    { level: 3, topic: "MWST", text: "Du verkaufst gegen bar, Betrag ist inkl. 7.7% MWST.", amount: 538.5,
+      solutions: (function(){
+        const v = vatSplit(538.5);
+        return [{ soll:["Kasse"], haben:["Warenertrag","Umsatzsteuer"], amount:v.gross,
+          hint:"Verkauf inkl. MWST: Kasse im Soll; Warenertrag (netto) + Umsatzsteuer im Haben.",
+          explain:`Brutto ${chf(v.gross)} = Netto ${chf(v.net)} + Umsatzsteuer ${chf(v.tax)}. Daher: Kasse an Warenertrag + Umsatzsteuer.` }];
+      })()
+    },
+    { level: 3, topic: "MWST", text: "Du verkaufst auf Rechnung, Betrag ist inkl. 7.7% MWST.", amount: 2154,
+      solutions: (function(){
+        const v = vatSplit(2154);
+        return [{ soll:["Forderungen LL"], haben:["Warenertrag","Umsatzsteuer"], amount:v.gross,
+          hint:"Auf Rechnung: Forderungen im Soll; Warenertrag + Umsatzsteuer im Haben (beides aus Brutto).",
+          explain:`Brutto ${chf(v.gross)} = Netto ${chf(v.net)} + Umsatzsteuer ${chf(v.tax)}. Daher: Forderungen an Warenertrag + Umsatzsteuer.` }];
+      })()
+    },
+    { level: 3, topic: "MWST", text: "Du kaufst Waren auf Rechnung, Betrag ist inkl. 7.7% MWST.", amount: 861.6,
+      solutions: (function(){
+        const v = vatSplit(861.6);
+        return [{ soll:["Warenaufwand","Vorsteuer"], haben:["Verbindlichkeiten LL"], amount:v.gross,
+          hint:"Einkauf auf Rechnung inkl. MWST: Warenaufwand + Vorsteuer im Soll; Verbindlichkeiten im Haben.",
+          explain:`Brutto ${chf(v.gross)} = Netto ${chf(v.net)} + Vorsteuer ${chf(v.tax)}. Daher: Warenaufwand + Vorsteuer an Verbindlichkeiten.` }];
+      })()
+    },
+    { level: 3, topic: "Gemischt", text: "Kunde zahlt eine offene Rechnung über Bank (die Rechnung war inkl. MWST gebucht).", amount: 2154,
+      solutions: [{ soll:["Bank"], haben:["Forderungen LL"], amount:2154,
+        hint:"Beim Zahlungseingang selbst keine neue MWST-Aufteilung. Du löschst nur die Forderung.",
+        explain:"Die MWST wurde beim Verkauf gebucht. Jetzt: Bank an Forderungen." }]
+    },
+    { level: 3, topic: "Gemischt", text: "Du bezahlst eine offene Lieferantenrechnung über Bank (die Rechnung war inkl. MWST gebucht).", amount: 861.6,
+      solutions: [{ soll:["Verbindlichkeiten LL"], haben:["Bank"], amount:861.6,
+        hint:"Beim Bezahlen: nur Verbindlichkeit ausgleichen, keine neue Vorsteuerbuchung.",
+        explain:"Vorsteuer wurde beim Einkauf gebucht. Jetzt: Verbindlichkeiten an Bank." }]
+    },
+  ];
+
+  const state = {
+    running: false,
+    level: 1,
+    mode: "infinite",
+    maxN: null,
+    queue: [],
+    current: null,
+    score: 0,
+    streak: 0,
+    attempts: 0,
+    correct: 0,
+    wrong: 0,
+    seen: 0,
+    log: []
+  };
+
+  function pickQuestions(levelSel){
+    let pool = [];
+    if(levelSel === "mix"){
+      pool = Q.slice();
+    } else {
+      const lvl = Number(levelSel);
+      pool = Q.filter(q => q.level === lvl);
+    }
+    for(let i=pool.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool;
+  }
+
+  function currentExpectedLines(q){
+    const sol = q.solutions[0];
+    const amount = sol.amount != null ? chf(sol.amount) : "(ohne Betrag)";
+    const soll = sol.soll.join(" + ");
+    const haben = sol.haben.join(" + ");
+    return `${soll} an ${haben}, ${amount}\n\nErklärung: ${sol.explain}`;
+  }
+
+  function setQuestionUI(q){
+    $("tagTopic").textContent = q.topic;
+    $("qText").textContent = q.text;
+    $("qAmountWrap").style.display = q.amount != null ? "" : "none";
+    $("qAmount").textContent = q.amount != null ? chf(q.amount) : "";
+    $("btnNext").disabled = true;
+    $("btnCheck").disabled = false;
+    $("btnHint").disabled = false;
+    $("btnShowSolution").disabled = false;
+    $("btnSkip").disabled = false;
+    $("answer").value = "";
+    $("answer").focus();
+
+    const total = state.maxN ? state.maxN : "∞";
+    $("metaProgress").textContent = `${state.seen}/${total}`;
+    $("pillLevel").textContent = (state.level === "mix") ? "Mix" : String(state.level);
+  }
+
+  function endSession(){
+    state.running = false;
+    $("qText").textContent = "Session beendet. Du kannst Reset drücken oder dein Ergebnis kopieren.";
+    $("qAmountWrap").style.display = "none";
+    $("tagTopic").textContent = "Fertig";
+    $("metaProgress").textContent = `${state.seen}/${state.seen}`;
+    $("btnNext").disabled = true;
+    $("btnCheck").disabled = true;
+    $("btnHint").disabled = true;
+    $("btnShowSolution").disabled = true;
+    $("btnSkip").disabled = true;
+    $("answer").value = "";
+    showFeedback("good", "Auswertung",
+      `Versuche: ${state.attempts} · Korrekt: ${state.correct} · Falsch: ${state.wrong} · Genauigkeit: ${state.attempts?Math.round(state.correct/state.attempts*100):0}% · Score: ${state.score}`,
+      "Export über „Ergebnis kopieren“.",
+      "—");
+    $("exportInfo").style.display = "block";
+    $("exportInfo").textContent = "Export kopiert einen JSON-Log in die Zwischenablage.";
+  }
+
+  function nextQuestion(fromReset=false){
+    if(state.maxN && state.seen >= state.maxN){
+      endSession();
+      return;
+    }
+    if(state.queue.length === 0){
+      state.queue = pickQuestions(state.level);
+    }
+    state.current = state.queue.pop();
+    state.seen = fromReset ? 1 : (state.seen + 1);
+    setQuestionUI(state.current);
+  }
+
+  function updateKPIs(){
+    $("pillScore").textContent = state.score;
+    $("pillStreak").textContent = state.streak;
+    $("kpiAttempts").textContent = state.attempts;
+    $("kpiCorrect").textContent = state.correct;
+    $("kpiWrong").textContent = state.wrong;
+    const acc = state.attempts ? Math.round((state.correct/state.attempts)*100) : 0;
+    $("pillAcc").textContent = `${acc}%`;
+  }
+
+  function showFeedback(kind, headline, text, expected, parsed){
+    const fb = $("feedback");
+    fb.className = `feedback show ${kind}`;
+    $("fbHeadline").textContent = headline;
+    $("fbText").textContent = text;
+    $("fbExpected").textContent = expected;
+    $("fbParsed").textContent = parsed;
+  }
+  function hideFeedback(){
+    $("feedback").className = "feedback";
+  }
+
+  function checkAnswer(forcedShowSolution=false){
+    const q = state.current;
+    const raw = $("answer").value;
+    const parsed = parseAnswer(raw);
+
+    const prettyParsed = [
+      `Soll: ${parsed.soll.length? parsed.soll.join(" + ") : "(leer)"}`,
+      `Haben: ${parsed.haben.length? parsed.haben.join(" + ") : "(leer)"}`,
+      `Betrag: ${parsed.amount != null ? chf(parsed.amount) : "(kein Betrag gefunden)"}`
+    ].join("\n");
+
+    const expectedLines = q.solutions.map(sol => {
+      const soll = sol.soll.join(" + ");
+      const haben = sol.haben.join(" + ");
+      const amt = sol.amount != null ? chf(sol.amount) : "(ohne Betrag)";
+      return `• ${soll} an ${haben}, ${amt}`;
+    }).join("\n");
+
+    if(forcedShowSolution){
+      showFeedback("warn", "Lösung",
+        q.solutions[0].explain,
+        expectedLines, prettyParsed);
+      $("btnNext").disabled = false;
+      $("btnCheck").disabled = true;
+      $("btnHint").disabled = true;
+      return;
+    }
+
+    state.attempts += 1;
+
+    let ok = false;
+    let amountOk = false;
+    let bestExplain = q.solutions[0].explain;
+    let bestHint = q.solutions[0].hint;
+
+    for(const sol of q.solutions){
+      const accountsOk = sameMultiset(parsed.soll, sol.soll) && sameMultiset(parsed.haben, sol.haben);
+      const amtExpected = sol.amount;
+      const amtGiven = parsed.amount;
+      const amtOk = (amtExpected == null) || (amtGiven != null && Math.abs(amtGiven - amtExpected) < 0.01);
+      if(accountsOk && amtOk){
+        ok = true; amountOk = true; bestExplain = sol.explain; bestHint = sol.hint; break;
+      }
+      if(accountsOk && !amtOk){
+        ok = true; amountOk = false; bestExplain = sol.explain; bestHint = sol.hint;
+      }
+    }
+
+    if(ok && amountOk){
+      state.correct += 1;
+      state.streak += 1;
+      state.score += 10 + Math.min(10, state.streak);
+      state.log.push({q:q.text, amount:q.amount, result:"korrekt", input:raw});
+      showFeedback("good", "Korrekt", bestExplain, expectedLines, prettyParsed);
+      $("btnNext").disabled = false;
+      $("btnCheck").disabled = true;
+      $("btnHint").disabled = true;
+    } else if(ok && !amountOk){
+      state.wrong += 1;
+      state.streak = 0;
+      state.score = Math.max(0, state.score - 3);
+      state.log.push({q:q.text, amount:q.amount, result:"fast (Betrag)", input:raw});
+      showFeedback("warn", "Fast. Konten stimmen, Betrag nicht.",
+        "Konten sind richtig, aber der Betrag passt nicht (oder fehlt). " + bestExplain,
+        expectedLines, prettyParsed);
+      $("btnNext").disabled = false;
+      $("btnCheck").disabled = true;
+      $("btnHint").disabled = true;
+    } else {
+      state.wrong += 1;
+      state.streak = 0;
+      state.score = Math.max(0, state.score - 5);
+      state.log.push({q:q.text, amount:q.amount, result:"falsch", input:raw});
+      showFeedback("bad", "Nicht korrekt",
+        "Kurzdiagnose: Soll/Haben oder Konten verdreht. " + (bestHint || ""),
+        expectedLines, prettyParsed);
+    }
+
+    updateKPIs();
+  }
+
+  function hint(){
+    const q = state.current;
+    showFeedback("warn", "Tipp", q.solutions[0].hint,
+      q.solutions.map(sol=>{
+        const soll = sol.soll.join(" + ");
+        const haben = sol.haben.join(" + ");
+        const amt = sol.amount != null ? chf(sol.amount) : "(ohne Betrag)";
+        return `• ${soll} an ${haben}, ${amt}`;
+      }).join("\n"),
+      "Noch nichts geprüft.");
+  }
+
+  function skip(){
+    state.attempts += 1;
+    state.wrong += 1;
+    state.streak = 0;
+    state.score = Math.max(0, state.score - 2);
+    state.log.push({q:state.current.text, amount:state.current.amount, result:"skip", input:""});
+    updateKPIs();
+    showFeedback("warn", "Übersprungen",
+      "Du hast die Aufgabe übersprungen. Hier ist die Lösung:",
+      currentExpectedLines(state.current),
+      "(kein Input)");
+    $("btnNext").disabled = false;
+    $("btnCheck").disabled = true;
+    $("btnHint").disabled = true;
+  }
+
+  async function exportResults(){
+    const payload = {
+      createdAt: new Date().toISOString(),
+      level: state.level,
+      mode: state.mode,
+      score: state.score,
+      attempts: state.attempts,
+      correct: state.correct,
+      wrong: state.wrong,
+      accuracy: state.attempts ? (state.correct/state.attempts) : 0,
+      log: state.log
+    };
+    const txt = JSON.stringify(payload, null, 2);
+    try{
+      await navigator.clipboard.writeText(txt);
+      $("exportInfo").style.display = "block";
+      $("exportInfo").textContent = "Ergebnis in die Zwischenablage kopiert.";
+    }catch(e){
+      $("exportInfo").style.display = "block";
+      $("exportInfo").textContent = "Konnte nicht kopieren. Browser halt.";
+      showFeedback("warn", "Export (manuell)", "Kopiere den folgenden Text:", txt, "—");
+    }
+  }
+
+  function reset(){
+    state.running = true;
+    state.level = $("levelSel").value;
+    state.mode = $("modeSel").value;
+    state.maxN = state.mode === "set10" ? 10 : state.mode === "set20" ? 20 : null;
+    state.score = 0;
+    state.streak = 0;
+    state.attempts = 0;
+    state.correct = 0;
+    state.wrong = 0;
+    state.seen = 0;
+    state.log = [];
+    state.queue = pickQuestions(state.level);
+    hideFeedback();
+    $("exportInfo").style.display = "none";
+    updateKPIs();
+    nextQuestion(true);
+  }
+
+  $("btnStart").addEventListener("click", reset);
+  $("btnCheck").addEventListener("click", ()=>checkAnswer(false));
+  $("btnHint").addEventListener("click", hint);
+  $("btnShowSolution").addEventListener("click", ()=>checkAnswer(true));
+  $("btnSkip").addEventListener("click", skip);
+  $("btnNext").addEventListener("click", ()=>{
+    hideFeedback();
+    nextQuestion(false);
+    updateKPIs();
+  });
+  $("btnExport").addEventListener("click", exportResults);
+
+  $("answer").addEventListener("keydown", (e)=>{
+    if(e.key === "Enter" && !e.shiftKey){
+      e.preventDefault();
+      if(!$("btnCheck").disabled) checkAnswer(false);
+      else if(!$("btnNext").disabled) $("btnNext").click();
+    }
+  });
+
+  updateKPIs();
+})();
+</script>
+</body>
+</html>
