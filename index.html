@@ -4,289 +4,72 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Buchungssatz-Training (interaktiv)</title>
+  <title>Buchungssatz-Training: Warenkonten</title>
   <style>
-    :root{
-      --bg:#0b1020;
-      --card:#121a33;
-      --muted:#8ea0c7;
-      --text:#e9eeff;
-      --good:#2dd4bf;
-      --bad:#fb7185;
-      --warn:#fbbf24;
-      --line:rgba(255,255,255,.10);
-      --shadow: 0 18px 50px rgba(0,0,0,.35);
-      --radius:18px;
-    }
+    :root{--bg:#0b1020;--card:#121a33;--muted:#8ea0c7;--text:#e9eeff;--good:#2dd4bf;--bad:#fb7185;--warn:#fbbf24;--line:rgba(255,255,255,.10);--shadow:0 18px 50px rgba(0,0,0,.35);--radius:18px;}
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      background: radial-gradient(1200px 800px at 20% 10%, rgba(45,212,191,.18), transparent 55%),
-                  radial-gradient(900px 700px at 85% 15%, rgba(99,102,241,.20), transparent 55%),
-                  radial-gradient(900px 700px at 40% 90%, rgba(251,113,133,.14), transparent 55%),
-                  var(--bg);
-      color:var(--text);
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-    }
-    .app{
-      width:min(980px, 100%);
-      display:grid;
-      gap:16px;
-    }
-    header{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:16px;
-      padding:6px 2px;
-    }
-    .title h1{
-      margin:0;
-      font-size: clamp(20px, 2.3vw, 30px);
-      letter-spacing:.2px;
-    }
-    .title p{
-      margin:6px 0 0;
-      color:var(--muted);
-      line-height:1.35;
-      max-width:60ch;
-    }
-    .pillbar{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      align-items:center;
-    }
-    .pill{
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color:var(--text);
-      padding:8px 12px;
-      border-radius:999px;
-      font-size:13px;
-      display:flex;
-      gap:8px;
-      align-items:center;
-      user-select:none;
-    }
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      background:radial-gradient(1200px 800px at 20% 10%, rgba(45,212,191,.18), transparent 55%),
+               radial-gradient(900px 700px at 85% 15%, rgba(99,102,241,.20), transparent 55%),
+               radial-gradient(900px 700px at 40% 90%, rgba(251,113,133,.14), transparent 55%),var(--bg);
+      color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .app{width:min(980px,100%);display:grid;gap:16px;}
+    header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:6px 2px;}
+    .title h1{margin:0;font-size:clamp(20px,2.3vw,30px);letter-spacing:.2px;}
+    .title p{margin:6px 0 0;color:var(--muted);line-height:1.35;max-width:70ch;}
+    .pillbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center;}
+    .pill{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);padding:8px 12px;border-radius:999px;font-size:13px;display:flex;gap:8px;align-items:center;user-select:none;}
     .pill b{font-weight:650}
-    .grid{
-      display:grid;
-      grid-template-columns: 1.35fr .65fr;
-      gap:16px;
-    }
-    @media (max-width: 880px){
-      .grid{grid-template-columns:1fr}
-      .pillbar{justify-content:flex-start}
-    }
-    .card{
-      background: rgba(18,26,51,.78);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
+    .grid{display:grid;grid-template-columns:1.35fr .65fr;gap:16px;}
+    @media (max-width:880px){.grid{grid-template-columns:1fr}.pillbar{justify-content:flex-start}}
+    .card{background:rgba(18,26,51,.78);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
     .card .inner{padding:18px}
-    .card h2{
-      margin:0 0 10px;
-      font-size:18px;
-    }
-    .qmeta{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      color:var(--muted);
-      font-size:13px;
-    }
-    .qbox{
-      margin-top:14px;
-      padding:14px;
-      border-radius: 14px;
-      border:1px dashed rgba(255,255,255,.16);
-      background: rgba(255,255,255,.03);
-      line-height:1.35;
-      font-size:16px;
-    }
-    .amount{
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      margin-top:10px;
-      font-size:14px;
-      color:var(--muted);
-    }
-    .amount code{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      background: rgba(255,255,255,.06);
-      padding:3px 8px;
-      border-radius: 999px;
-      border:1px solid var(--line);
-      color:var(--text);
-    }
-    .inputrow{
-      margin-top:14px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-    }
-    textarea{
-      width:100%;
-      min-height:78px;
-      resize:vertical;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background: rgba(9,13,28,.55);
-      color:var(--text);
-      padding:12px 12px;
-      font-size:15px;
-      line-height:1.35;
-      outline:none;
-    }
-    textarea:focus{border-color: rgba(45,212,191,.45); box-shadow: 0 0 0 4px rgba(45,212,191,.12);}
-    .btnrow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    button{
-      border-radius: 999px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.06);
-      color:var(--text);
-      padding:10px 14px;
-      font-weight:650;
-      font-size:14px;
-      cursor:pointer;
-    }
-    button:hover{background: rgba(255,255,255,.10)}
-    button.primary{
-      background: rgba(45,212,191,.16);
-      border-color: rgba(45,212,191,.35);
-    }
-    button.primary:hover{background: rgba(45,212,191,.22)}
-    button.danger{
-      background: rgba(251,113,133,.14);
-      border-color: rgba(251,113,133,.35);
-    }
-    button.danger:hover{background: rgba(251,113,133,.20)}
-    button:disabled{
-      opacity:.5;
-      cursor:not-allowed;
-    }
-    .feedback{
-      margin-top:12px;
-      border-radius: 14px;
-      border:1px solid var(--line);
-      padding:12px;
-      background: rgba(255,255,255,.04);
-      display:none;
-    }
+    .card h2{margin:0 0 10px;font-size:18px;}
+    .qmeta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:13px;}
+    .qbox{margin-top:14px;padding:14px;border-radius:14px;border:1px dashed rgba(255,255,255,.16);background:rgba(255,255,255,.03);line-height:1.35;font-size:16px;}
+    .amount{display:inline-flex;gap:8px;align-items:center;margin-top:10px;font-size:14px;color:var(--muted);}
+    .amount code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;background:rgba(255,255,255,.06);padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--text);}
+    .inputrow{margin-top:14px;display:grid;grid-template-columns:1fr;gap:10px;}
+    textarea{width:100%;min-height:78px;resize:vertical;border-radius:14px;border:1px solid var(--line);background:rgba(9,13,28,.55);color:var(--text);padding:12px;font-size:15px;line-height:1.35;outline:none;}
+    textarea:focus{border-color:rgba(45,212,191,.45);box-shadow:0 0 0 4px rgba(45,212,191,.12);}
+    .btnrow{display:flex;gap:10px;flex-wrap:wrap;}
+    button{border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);padding:10px 14px;font-weight:650;font-size:14px;cursor:pointer;}
+    button:hover{background:rgba(255,255,255,.10)}
+    button.primary{background:rgba(45,212,191,.16);border-color:rgba(45,212,191,.35);}
+    button.primary:hover{background:rgba(45,212,191,.22)}
+    button.danger{background:rgba(251,113,133,.14);border-color:rgba(251,113,133,.35);}
+    button.danger:hover{background:rgba(251,113,133,.20)}
+    button:disabled{opacity:.5;cursor:not-allowed;}
+    .feedback{margin-top:12px;border-radius:14px;border:1px solid var(--line);padding:12px;background:rgba(255,255,255,.04);display:none;}
     .feedback.show{display:block}
-    .feedback.good{border-color: rgba(45,212,191,.35); background: rgba(45,212,191,.08)}
-    .feedback.bad{border-color: rgba(251,113,133,.35); background: rgba(251,113,133,.08)}
-    .feedback.warn{border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.08)}
-    .feedback .headline{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      font-weight:750;
-      margin-bottom:6px;
-    }
-    .small{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.35;
-    }
-    .mono{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size:13px;
-      white-space:pre-wrap;
-    }
-    .side .statgrid{
-      display:grid;
-      gap:12px;
-    }
-    .kpi{
-      padding:14px;
-      border-radius: 16px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.03);
-    }
-    .kpi .label{color:var(--muted); font-size:12px}
-    .kpi .value{font-size:22px; font-weight:800; margin-top:3px}
-    .kpi .value small{font-size:14px; color:var(--muted); font-weight:650}
-    .select{
-      display:grid;
-      gap:10px;
-      margin-top:8px;
-    }
-    select{
-      width:100%;
-      border-radius: 14px;
-      border:1px solid var(--line);
-      background: rgba(9,13,28,.55);
-      color:var(--text);
-      padding:10px 10px;
-      font-weight:650;
-      outline:none;
-    }
-    .kbd{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size:12px;
-      color:var(--muted);
-      border:1px solid var(--line);
-      border-bottom-color: rgba(255,255,255,.2);
-      background: rgba(255,255,255,.04);
-      padding:3px 6px;
-      border-radius: 8px;
-    }
-    .footerhint{
-      margin-top:10px;
-      color:var(--muted);
-      font-size:12px;
-    }
-    .divider{
-      height:1px;
-      background: var(--line);
-      margin:14px 0;
-    }
-    details{
-      border:1px solid var(--line);
-      border-radius: 16px;
-      padding:10px 12px;
-      background: rgba(255,255,255,.03);
-    }
-    summary{
-      cursor:pointer;
-      font-weight:700;
-    }
-    ul{margin:10px 0 0; padding-left:18px; color:var(--muted); line-height:1.45}
-    .tag{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color:var(--muted);
-      padding:4px 8px;
-      border-radius:999px;
-      font-size:12px;
-    }
+    .feedback.good{border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+    .feedback.bad{border-color:rgba(251,113,133,.35);background:rgba(251,113,133,.08)}
+    .feedback.warn{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.08)}
+    .feedback .headline{display:flex;gap:10px;align-items:center;font-weight:750;margin-bottom:6px;}
+    .small{color:var(--muted);font-size:13px;line-height:1.35;}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:13px;white-space:pre-wrap;}
+    .side .statgrid{display:grid;gap:12px;}
+    .kpi{padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.03);}
+    .kpi .label{color:var(--muted);font-size:12px}
+    .kpi .value{font-size:22px;font-weight:800;margin-top:3px}
+    .kpi .value small{font-size:14px;color:var(--muted);font-weight:650}
+    .select{display:grid;gap:10px;margin-top:8px;}
+    select{width:100%;border-radius:14px;border:1px solid var(--line);background:rgba(9,13,28,.55);color:var(--text);padding:10px;font-weight:650;outline:none;}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:12px;color:var(--muted);border:1px solid var(--line);border-bottom-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);padding:3px 6px;border-radius:8px;}
+    .footerhint{margin-top:10px;color:var(--muted);font-size:12px;}
+    .divider{height:1px;background:var(--line);margin:14px 0;}
+    details{border:1px solid var(--line);border-radius:16px;padding:10px 12px;background:rgba(255,255,255,.03);}
+    summary{cursor:pointer;font-weight:700;}
+    ul{margin:10px 0 0;padding-left:18px;color:var(--muted);line-height:1.45}
+    .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--muted);padding:4px 8px;border-radius:999px;font-size:12px;}
   </style>
 </head>
 <body>
   <div class="app">
     <header>
       <div class="title">
-        <h1>Buchungssatz-Training</h1>
-        <p>Interaktiv, sofortiges Feedback, mit steigender Schwierigkeit. Du gibst deine Antwort als <b>Soll an Haben</b> (mit Betrag) ein, und die Maschine urteilt gnadenlos.</p>
+        <h1>Buchungssatz-Training: Warenkonten</h1>
+        <p>Fokus: <b>Wareneinkauf / Warenverkauf / Warenbestand</b> inkl. <b>Rabatt, Skonto, Rücksendungen, Bezugskosten</b> und <b>Bestandesänderung/Abschluss</b>. Du tippst <b>Soll an Haben, Betrag</b>, und bekommst sofort Feedback.</p>
       </div>
       <div class="pillbar">
         <div class="pill"><span>Level</span> <b id="pillLevel">1</b></div>
@@ -299,7 +82,7 @@
     <div class="grid">
       <section class="card">
         <div class="inner">
-          <h2>Aufgabe <span class="tag" id="tagTopic">Basics</span></h2>
+          <h2>Aufgabe <span class="tag" id="tagTopic">Warenkonten</span></h2>
           <div class="qmeta">
             <span id="metaProgress">0/0</span>
             <span>•</span>
@@ -314,7 +97,7 @@
           </div>
 
           <div class="inputrow">
-            <textarea id="answer" placeholder="Beispiel: Warenaufwand an Bank, 1200"></textarea>
+            <textarea id="answer" placeholder="Beispiel: Wareneinkauf an Verbindlichkeiten, 2000"></textarea>
             <div class="btnrow">
               <button class="primary" id="btnCheck">Prüfen</button>
               <button id="btnHint">Tipp</button>
@@ -335,7 +118,7 @@
           </div>
 
           <div class="footerhint">
-            Pro-Tipp: Aufwand & Aktiv nehmen zu im <b>Soll</b>. Ertrag & Passiv nehmen zu im <b>Haben</b>. Ja, das ist nervig. Nein, es ändert sich nicht.
+            Mini-Logik (periodisch): <b>Einkauf</b> im Soll, <b>Verkauf</b> im Haben. <b>Rabatt/Rücksendung</b> korrigiert meist das ursprüngliche Warenkonto. <b>Skonto</b> ist Preisnachlass bei Zahlung: Einkauf → oft <b>Skontoertrag</b>, Verkauf → <b>Skontoaufwand</b>.
           </div>
 
           <div style="margin-top:14px;">
@@ -343,12 +126,12 @@
               <summary>Welche Kontobezeichnungen akzeptiert das Tool?</summary>
               <ul>
                 <li><b>Kasse</b>, <b>Bank</b></li>
-                <li><b>Warenaufwand</b> (auch: Wareneinkauf), <b>Warenertrag</b> (auch: Warenverkauf)</li>
-                <li><b>Forderungen LL</b> (auch: Debitoren), <b>Verbindlichkeiten LL</b> (auch: Kreditoren)</li>
-                <li><b>Mietaufwand</b>, <b>Lohnaufwand</b></li>
-                <li><b>Eigenkapital</b>, <b>Privat</b> (Privatentnahme/Privateinlage)</li>
-                <li><b>Maschinen</b>, <b>Abschreibungen</b> (als Aufwand)</li>
-                <li><b>Vorsteuer</b>, <b>Umsatzsteuer</b> (für MWST-Aufgaben im Level 3)</li>
+                <li><b>Wareneinkauf</b> (auch: Warenaufwand), <b>Warenverkauf</b> (auch: Warenertrag)</li>
+                <li><b>Warenbestand</b> / <b>Warenvorrat</b></li>
+                <li><b>Bezugskosten</b> / <b>Frachtkosten</b></li>
+                <li><b>Forderungen LL</b> (Debitoren), <b>Verbindlichkeiten LL</b> (Kreditoren)</li>
+                <li><b>Erlösminderungen</b> (Rabatte/Gutschriften im Verkauf), <b>Skontoertrag</b>, <b>Skontoaufwand</b></li>
+                <li><b>Eigenkapital</b>, <b>Privat</b></li>
               </ul>
             </details>
           </div>
@@ -361,9 +144,9 @@
           <div class="select">
             <label class="small" for="levelSel"><b>Schwierigkeit</b></label>
             <select id="levelSel">
-              <option value="1">Level 1: Basics (Kasse/Bank, Aufwand/Ertrag)</option>
-              <option value="2">Level 2: Rechnung & Ausgleich (Ford./Verb.)</option>
-              <option value="3">Level 3: MWST & gemischte Fälle</option>
+              <option value="1">Level 1: Wareneinkauf & Warenverkauf (Basis)</option>
+              <option value="2">Level 2: Rabatt, Rücksendung, Skonto, Bezugskosten</option>
+              <option value="3">Level 3: Warenbestand (Bestandesänderung) & Abschluss</option>
               <option value="mix">Mix: Alles durcheinander</option>
             </select>
 
@@ -415,17 +198,13 @@
     const int = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, "’");
     return `CHF ${int}.${parts[1]}`;
   }
-  function round2(n){ return Math.round(n*100)/100; }
 
   function normalizeText(s){
-    return (s||"")
-      .toLowerCase()
+    return (s||"").toLowerCase()
       .replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")
-      .replace(/chf/g,"")
-      .replace(/[(),;:]/g," ")
-      .replace(/\s+/g," ")
-      .trim();
+      .replace(/chf/g,"").replace(/[(),;:]/g," ").replace(/\s+/g," ").trim();
   }
+
   function extractAmount(raw){
     const s = raw.replace(/’/g,"'");
     const m = s.match(/(-?\d[\d\s'’]*([.,]\d{1,2})?)/g);
@@ -438,44 +217,16 @@
   }
 
   const accountMap = new Map([
-    ["kasse","Kasse"],
-    ["bank","Bank"],
-    ["post","Bank"], ["postkonto","Bank"],
-    ["warenaufwand","Warenaufwand"],
-    ["wareneinkauf","Warenaufwand"],
-    ["wareneinkaeufe","Warenaufwand"],
-    ["warenertrag","Warenertrag"],
-    ["warenverkauf","Warenertrag"],
-    ["verkauf","Warenertrag"],
-    ["forderungen","Forderungen LL"],
-    ["forderungen ll","Forderungen LL"],
-    ["debitoren","Forderungen LL"],
-    ["debitor","Forderungen LL"],
-    ["debitore","Forderungen LL"],
-    ["verbindlichkeiten","Verbindlichkeiten LL"],
-    ["verbindlichkeiten ll","Verbindlichkeiten LL"],
-    ["kreditoren","Verbindlichkeiten LL"],
-    ["kreditor","Verbindlichkeiten LL"],
-    ["creditoren","Verbindlichkeiten LL"],
-    ["eigenkapital","Eigenkapital"],
-    ["kapital","Eigenkapital"],
-    ["privat","Privat"],
-    ["privateinlage","Privat"],
-    ["privatentnahme","Privat"],
-    ["miete","Mietaufwand"],
-    ["mietaufwand","Mietaufwand"],
-    ["lohn","Lohnaufwand"],
-    ["loehne","Lohnaufwand"],
-    ["lohnaufwand","Lohnaufwand"],
-    ["abschreibungen","Abschreibungen"],
-    ["abschreibung","Abschreibungen"],
-    ["maschinen","Maschinen"],
-    ["maschine","Maschinen"],
-    ["vorsteuer","Vorsteuer"],
-    ["mwst vorsteuer","Vorsteuer"],
-    ["umsatzsteuer","Umsatzsteuer"],
-    ["mwst umsatzsteuer","Umsatzsteuer"],
-    ["mwst","Umsatzsteuer"],
+    ["kasse","Kasse"],["bank","Bank"],["post","Bank"],["postkonto","Bank"],
+    ["forderungen","Forderungen LL"],["forderungen ll","Forderungen LL"],["debitoren","Forderungen LL"],["debitor","Forderungen LL"],
+    ["verbindlichkeiten","Verbindlichkeiten LL"],["verbindlichkeiten ll","Verbindlichkeiten LL"],["kreditoren","Verbindlichkeiten LL"],["kreditor","Verbindlichkeiten LL"],["creditoren","Verbindlichkeiten LL"],
+    ["wareneinkauf","Wareneinkauf"],["warenaufwand","Wareneinkauf"],["einkauf","Wareneinkauf"],["waren einkauf","Wareneinkauf"],
+    ["warenverkauf","Warenverkauf"],["warenertrag","Warenverkauf"],["verkauf","Warenverkauf"],
+    ["warenbestand","Warenbestand"],["warenvorrat","Warenbestand"],["warenvorat","Warenbestand"],
+    ["bezugskosten","Bezugskosten"],["frachtkosten","Bezugskosten"],["fracht","Bezugskosten"],["transportkosten","Bezugskosten"],
+    ["erloesminderungen","Erlösminderungen"],["erloesminderung","Erlösminderungen"],["rabatte","Erlösminderungen"],["rabatt","Erlösminderungen"],["gutschrift","Erlösminderungen"],["gutschriften","Erlösminderungen"],
+    ["skontoertrag","Skontoertrag"],["skonto ertrag","Skontoertrag"],["skontoaufwand","Skontoaufwand"],["skonto aufwand","Skontoaufwand"],
+    ["eigenkapital","Eigenkapital"],["kapital","Eigenkapital"],["privat","Privat"],["privateinlage","Privat"],["privatentnahme","Privat"],
   ]);
 
   function normalizeAccountToken(token){
@@ -483,30 +234,23 @@
     if(!t) return null;
     if(accountMap.has(t)) return accountMap.get(t);
 
-    const cleaned = t
-      .replace(/\b(an|im|in|ins|auf|gegen|per|via|mit|bar|ueber|über|von|zu|der|die|das|den|dem)\b/g,"")
-      .replace(/\s+/g," ")
-      .trim();
-
+    const cleaned = t.replace(/\b(an|im|in|ins|auf|gegen|per|via|mit|bar|ueber|über|von|zu|der|die|das|den|dem|rechnung)\b/g,"")
+      .replace(/\s+/g," ").trim();
     if(accountMap.has(cleaned)) return accountMap.get(cleaned);
 
     if(cleaned.includes("kasse")) return "Kasse";
     if(cleaned.includes("bank")) return "Bank";
-    if(cleaned.includes("waren") && cleaned.includes("aufwand")) return "Warenaufwand";
-    if(cleaned.includes("waren") && cleaned.includes("ertrag")) return "Warenertrag";
-    if(cleaned.includes("debit")) return "Forderungen LL";
-    if(cleaned.includes("kredit")) return "Verbindlichkeiten LL";
-    if(cleaned.includes("forderung")) return "Forderungen LL";
-    if(cleaned.includes("verbind")) return "Verbindlichkeiten LL";
-    if(cleaned.includes("miet")) return "Mietaufwand";
-    if(cleaned.includes("lohn")) return "Lohnaufwand";
-    if(cleaned.includes("eigenkap")) return "Eigenkapital";
+    if(cleaned.includes("debit") || cleaned.includes("forderung")) return "Forderungen LL";
+    if(cleaned.includes("kredit") || cleaned.includes("verbind")) return "Verbindlichkeiten LL";
+    if(cleaned.includes("einkauf")) return "Wareneinkauf";
+    if(cleaned.includes("verkauf")) return "Warenverkauf";
+    if(cleaned.includes("bestand") || cleaned.includes("vorrat")) return "Warenbestand";
+    if(cleaned.includes("fracht") || cleaned.includes("bezug") || cleaned.includes("transport")) return "Bezugskosten";
+    if(cleaned.includes("skonto") && cleaned.includes("aufw")) return "Skontoaufwand";
+    if(cleaned.includes("skonto")) return "Skontoertrag";
+    if(cleaned.includes("rabatt") || cleaned.includes("erloes") || cleaned.includes("gutsch")) return "Erlösminderungen";
     if(cleaned.includes("privat")) return "Privat";
-    if(cleaned.includes("maschine")) return "Maschinen";
-    if(cleaned.includes("abschreib")) return "Abschreibungen";
-    if(cleaned.includes("vorsteuer")) return "Vorsteuer";
-    if(cleaned.includes("umsatzsteuer") || cleaned.includes("mwst")) return "Umsatzsteuer";
-
+    if(cleaned.includes("eigenkap")) return "Eigenkapital";
     return token.trim();
   }
 
@@ -514,33 +258,17 @@
     const norm = normalizeText(raw);
     const anIndex = norm.indexOf(" an ");
     let left = "", right = "";
-    if(anIndex >= 0){
-      left = norm.slice(0, anIndex).trim();
-      right = norm.slice(anIndex + 4).trim();
-    } else {
-      const arrow = norm.indexOf("->");
-      const slash = norm.indexOf("/");
-      if(arrow >= 0){
-        left = norm.slice(0, arrow).trim();
-        right = norm.slice(arrow+2).trim();
-      } else if(slash >= 0){
-        left = norm.slice(0, slash).trim();
-        right = norm.slice(slash+1).trim();
-      } else {
-        left = norm;
-        right = "";
-      }
+    if(anIndex >= 0){ left = norm.slice(0, anIndex).trim(); right = norm.slice(anIndex + 4).trim(); }
+    else {
+      const arrow = norm.indexOf("->"); const slash = norm.indexOf("/");
+      if(arrow >= 0){ left = norm.slice(0, arrow).trim(); right = norm.slice(arrow+2).trim(); }
+      else if(slash >= 0){ left = norm.slice(0, slash).trim(); right = norm.slice(slash+1).trim(); }
+      else { left = norm; right = ""; }
     }
-
-    left = left.replace(/^soll\s+/,"");
-    right = right.replace(/^haben\s+/,"");
+    left = left.replace(/^soll\s+/,""); right = right.replace(/^haben\s+/,"");
 
     function splitAccounts(side){
-      const tmp = side
-        .replace(/\bund\b/g, "+")
-        .replace(/\s*\+\s*/g, "+")
-        .trim();
-
+      const tmp = side.replace(/\bund\b/g, "+").replace(/\s*\+\s*/g, "+").trim();
       if(!tmp) return [];
       return tmp.split("+").map(x => x.trim()).filter(Boolean).map(normalizeAccountToken);
     }
@@ -548,7 +276,6 @@
     const soll = splitAccounts(left);
     const haben = splitAccounts(right.replace(/-?\d[\d\s'’]*([.,]\d{1,2})?/g, "").trim());
     const amount = extractAmount(raw);
-
     return { soll, haben, amount, norm };
   }
 
@@ -564,209 +291,85 @@
     return ca.size===0;
   }
 
-  const VAT = 0.077;
-
-  function vatSplit(gross){
-    const net = gross / (1+VAT);
-    const tax = gross - net;
-    return { net: round2(net), tax: round2(tax), gross: round2(gross) };
-  }
-
   const Q = [
-    { level: 1, topic: "Basics", text: "Du zahlst die Miete bar.", amount: 800,
-      solutions: [{ soll:["Mietaufwand"], haben:["Kasse"], amount:800,
-        hint:"Miete ist Aufwand (nimmt zu) → Soll. Barzahlung vermindert Kasse → Haben.",
-        explain:"Aufwand steigt im Soll. Kasse sinkt im Haben." }]
-    },
-    { level: 1, topic: "Basics", text: "Du kaufst Waren gegen Bank (sofort bezahlt).", amount: 1200,
-      solutions: [{ soll:["Warenaufwand"], haben:["Bank"], amount:1200,
-        hint:"Wareneinkauf = Aufwand. Bezahlt über Bank = Bank nimmt ab.",
-        explain:"Warenaufwand im Soll, Bank im Haben." }]
-    },
-    { level: 1, topic: "Basics", text: "Du verkaufst Waren gegen bar.", amount: 450,
-      solutions: [{ soll:["Kasse"], haben:["Warenertrag"], amount:450,
-        hint:"Barverkauf: Kasse nimmt zu (Soll). Verkaufsertrag steigt (Haben).",
-        explain:"Aktivkonto (Kasse) steigt im Soll, Ertrag steigt im Haben." }]
-    },
-    { level: 1, topic: "Basics", text: "Du zahlst Lohn über Bank.", amount: 1500,
-      solutions: [{ soll:["Lohnaufwand"], haben:["Bank"], amount:1500,
-        hint:"Lohn = Aufwand (Soll). Bankzahlung = Bank nimmt ab (Haben).",
-        explain:"Aufwand Soll, Bank Haben." }]
-    },
-    { level: 1, topic: "Basics", text: "Du legst privat Geld in die Kasse ein (Privateinlage).", amount: 300,
-      solutions: [{ soll:["Kasse"], haben:["Privat"], amount:300,
-        hint:"Kasse steigt (Soll). Privateinlage erhöht Privatkonto im Haben (Eigenmittel-Zufuhr).",
-        explain:"Aktiv steigt im Soll; Gegenkonto Privat im Haben." }]
-    },
-    { level: 1, topic: "Basics", text: "Du entnimmst privat Bargeld aus der Kasse (Privatentnahme).", amount: 120,
-      solutions: [{ soll:["Privat"], haben:["Kasse"], amount:120,
-        hint:"Entnahme: Kasse sinkt (Haben). Privatkonto wird im Soll belastet.",
-        explain:"Privatentnahme: Privat Soll an Kasse Haben." }]
-    },
+    // Level 1
+    { level: 1, topic: "Basis", text: "Warenkauf auf Rechnung (Lieferant stellt Rechnung).", amount: 2000,
+      solutions: [{ soll:["Wareneinkauf"], haben:["Verbindlichkeiten LL"], amount:2000,
+        hint:"Einkauf → Wareneinkauf (Soll). Auf Rechnung → Verbindlichkeiten (Haben).",
+        explain:"Wareneinkauf steigt (Soll), Verbindlichkeiten steigen (Haben)." }] },
+    { level: 1, topic: "Basis", text: "Warenkauf gegen Bank (sofort bezahlt).", amount: 1350,
+      solutions: [{ soll:["Wareneinkauf"], haben:["Bank"], amount:1350,
+        hint:"Einkauf ist Wareneinkauf (Soll). Bankzahlung vermindert Bank (Haben).",
+        explain:"Wareneinkauf (Soll) an Bank (Haben)." }] },
+    { level: 1, topic: "Basis", text: "Warenverkauf gegen bar.", amount: 980,
+      solutions: [{ soll:["Kasse"], haben:["Warenverkauf"], amount:980,
+        hint:"Geld kommt rein → Kasse (Soll). Erlös → Warenverkauf (Haben).",
+        explain:"Kasse steigt im Soll, Warenverkauf steigt im Haben." }] },
+    { level: 1, topic: "Basis", text: "Warenverkauf auf Rechnung (Kunde zahlt später).", amount: 3100,
+      solutions: [{ soll:["Forderungen LL"], haben:["Warenverkauf"], amount:3100,
+        hint:"Forderungen steigen (Soll), Erlös im Haben.",
+        explain:"Forderungen (Soll) an Warenverkauf (Haben)." }] },
 
-    { level: 2, topic: "Rechnung", text: "Du verkaufst Waren auf Rechnung (Kunde zahlt später).", amount: 900,
-      solutions: [{ soll:["Forderungen LL"], haben:["Warenertrag"], amount:900,
-        hint:"Auf Rechnung: Forderungen steigen (Soll). Verkaufsertrag (Haben).",
-        explain:"Forderungen = Aktivkonto (Sollmehrung). Ertrag im Haben." }]
-    },
-    { level: 2, topic: "Rechnung", text: "Du kaufst Waren auf Rechnung (Lieferant stellt Rechnung).", amount: 640,
-      solutions: [{ soll:["Warenaufwand"], haben:["Verbindlichkeiten LL"], amount:640,
-        hint:"Einkauf = Aufwand (Soll). Noch nicht bezahlt → Verbindlichkeiten steigen (Haben).",
-        explain:"Aufwand Soll, Verbindlichkeiten Haben." }]
-    },
-    { level: 2, topic: "Ausgleich", text: "Ein Kunde begleicht eine offene Rechnung über Bank.", amount: 900,
-      solutions: [{ soll:["Bank"], haben:["Forderungen LL"], amount:900,
-        hint:"Geldeingang: Bank steigt (Soll). Forderung verschwindet (Haben).",
-        explain:"Aktivtausch: Bank +, Forderungen -." }]
-    },
-    { level: 2, topic: "Ausgleich", text: "Du bezahlst eine Lieferantenrechnung über Bank.", amount: 600,
-      solutions: [{ soll:["Verbindlichkeiten LL"], haben:["Bank"], amount:600,
-        hint:"Bezahlung: Verbindlichkeiten nehmen ab (Soll). Bank sinkt (Haben).",
-        explain:"Passiv nimmt ab im Soll; Bank nimmt ab im Haben." }]
-    },
-    { level: 2, topic: "Investition", text: "Du kaufst eine Maschine und zahlst über Bank.", amount: 5000,
-      solutions: [{ soll:["Maschinen"], haben:["Bank"], amount:5000,
-        hint:"Maschine = Aktivkonto (nimmt zu im Soll). Bank zahlt = Bank nimmt ab im Haben.",
-        explain:"Aktivkonto steigt im Soll, Bank sinkt im Haben." }]
-    },
-    { level: 2, topic: "Abschluss", text: "Du buchst eine Abschreibung auf Maschinen (vereinfachte Darstellung als Aufwand).", amount: 400,
-      solutions: [{ soll:["Abschreibungen"], haben:["Maschinen"], amount:400,
-        hint:"Abschreibung als Aufwand im Soll, Wert der Maschine sinkt im Haben.",
-        explain:"Aufwand steigt im Soll; Aktivkonto Maschinen sinkt im Haben." }]
-    },
+    // Level 2
+    { level: 2, topic: "Rabatt Einkauf", text: "Lieferant gewährt auf eine offene Einkaufsrechnung einen Rabatt (Gutschrift).", amount: 200,
+      solutions: [{ soll:["Verbindlichkeiten LL"], haben:["Wareneinkauf"], amount:200,
+        hint:"Rabatt senkt die Schuld (Soll) und korrigiert Wareneinkauf (Haben).",
+        explain:"Einkaufsrabatt: Verbindlichkeiten an Wareneinkauf." }] },
+    { level: 2, topic: "Rücksendung Einkauf", text: "Du sendest mangelhafte Waren an den Lieferanten zurück (auf Rechnung gekauft).", amount: 300,
+      solutions: [{ soll:["Verbindlichkeiten LL"], haben:["Wareneinkauf"], amount:300,
+        hint:"Rücksendung reduziert Verbindlichkeiten und Wareneinkauf.",
+        explain:"Einkaufsrücksendung: Verbindlichkeiten an Wareneinkauf." }] },
+    { level: 2, topic: "Bezugskosten", text: "Du bezahlst Fracht/Bezugskosten bar.", amount: 80,
+      solutions: [{ soll:["Bezugskosten"], haben:["Kasse"], amount:80,
+        hint:"Bezugskosten Aufwand im Soll, Kasse sinkt im Haben.",
+        explain:"Bezugskosten an Kasse." }] },
+    { level: 2, topic: "Bezugskosten", text: "Frachtkosten werden dir zusätzlich auf Rechnung gestellt.", amount: 120,
+      solutions: [{ soll:["Bezugskosten"], haben:["Verbindlichkeiten LL"], amount:120,
+        hint:"Bezugskosten (Soll), noch nicht bezahlt → Verbindlichkeiten (Haben).",
+        explain:"Bezugskosten an Verbindlichkeiten." }] },
+    { level: 2, topic: "Skonto Einkauf", text: "Du bezahlst eine Lieferantenrechnung und erhältst 2% Skonto. (Rechnungsbetrag vor Skonto)", amount: 1500,
+      solutions: [{ soll:["Verbindlichkeiten LL"], haben:["Bank","Skontoertrag"], amount:1500,
+        hint:"Verbindlichkeit wird gelöscht (Soll). Bank + Skontoertrag im Haben (Total = Rechnungsbetrag).",
+        explain:"Skonto Einkauf: Verbindlichkeiten an Bank + Skontoertrag." }] },
+    { level: 2, topic: "Rabatt Verkauf", text: "Du gewährst einem Kunden nachträglich einen Rabatt (Gutschrift) auf eine offene Verkaufsrechnung.", amount: 250,
+      solutions: [{ soll:["Erlösminderungen"], haben:["Forderungen LL"], amount:250,
+        hint:"Erlösminderung im Soll, Forderung sinkt im Haben.",
+        explain:"Verkaufsrabatt: Erlösminderungen an Forderungen." }] },
+    { level: 2, topic: "Rücksendung Verkauf", text: "Ein Kunde schickt Waren zurück, die ursprünglich auf Rechnung verkauft wurden (Gutschrift).", amount: 400,
+      solutions: [{ soll:["Erlösminderungen"], haben:["Forderungen LL"], amount:400,
+        hint:"Rücksendung = Erlösminderung (Soll), Forderung sinkt (Haben).",
+        explain:"Verkaufsrücksendung: Erlösminderungen an Forderungen." }] },
+    { level: 2, topic: "Skonto Verkauf", text: "Kunde bezahlt eine offene Rechnung und du gewährst 2% Skonto. (Rechnungsbetrag vor Skonto)", amount: 1000,
+      solutions: [{ soll:["Bank","Skontoaufwand"], haben:["Forderungen LL"], amount:1000,
+        hint:"Forderung wird gelöscht (Haben). Bank + Skontoaufwand im Soll (Total = Rechnungsbetrag).",
+        explain:"Skonto Verkauf: Bank + Skontoaufwand an Forderungen." }] },
 
-    { level: 3, topic: "MWST", text: "Du kaufst Waren über Bank, Betrag ist inkl. 7.7% MWST.", amount: 1077,
-      solutions: (function(){
-        const v = vatSplit(1077);
-        return [{ soll:["Warenaufwand","Vorsteuer"], haben:["Bank"], amount:v.gross,
-          hint:"Einkauf inkl. MWST: Warenaufwand (netto) + Vorsteuer (MWST) im Soll; Bank im Haben.",
-          explain:`Brutto ${chf(v.gross)} = Netto ${chf(v.net)} + Vorsteuer ${chf(v.tax)}. Daher: Warenaufwand + Vorsteuer an Bank.` }];
-      })()
-    },
-    { level: 3, topic: "MWST", text: "Du verkaufst gegen bar, Betrag ist inkl. 7.7% MWST.", amount: 538.5,
-      solutions: (function(){
-        const v = vatSplit(538.5);
-        return [{ soll:["Kasse"], haben:["Warenertrag","Umsatzsteuer"], amount:v.gross,
-          hint:"Verkauf inkl. MWST: Kasse im Soll; Warenertrag (netto) + Umsatzsteuer im Haben.",
-          explain:`Brutto ${chf(v.gross)} = Netto ${chf(v.net)} + Umsatzsteuer ${chf(v.tax)}. Daher: Kasse an Warenertrag + Umsatzsteuer.` }];
-      })()
-    },
-    { level: 3, topic: "MWST", text: "Du verkaufst auf Rechnung, Betrag ist inkl. 7.7% MWST.", amount: 2154,
-      solutions: (function(){
-        const v = vatSplit(2154);
-        return [{ soll:["Forderungen LL"], haben:["Warenertrag","Umsatzsteuer"], amount:v.gross,
-          hint:"Auf Rechnung: Forderungen im Soll; Warenertrag + Umsatzsteuer im Haben (beides aus Brutto).",
-          explain:`Brutto ${chf(v.gross)} = Netto ${chf(v.net)} + Umsatzsteuer ${chf(v.tax)}. Daher: Forderungen an Warenertrag + Umsatzsteuer.` }];
-      })()
-    },
-    { level: 3, topic: "MWST", text: "Du kaufst Waren auf Rechnung, Betrag ist inkl. 7.7% MWST.", amount: 861.6,
-      solutions: (function(){
-        const v = vatSplit(861.6);
-        return [{ soll:["Warenaufwand","Vorsteuer"], haben:["Verbindlichkeiten LL"], amount:v.gross,
-          hint:"Einkauf auf Rechnung inkl. MWST: Warenaufwand + Vorsteuer im Soll; Verbindlichkeiten im Haben.",
-          explain:`Brutto ${chf(v.gross)} = Netto ${chf(v.net)} + Vorsteuer ${chf(v.tax)}. Daher: Warenaufwand + Vorsteuer an Verbindlichkeiten.` }];
-      })()
-    },
-    { level: 3, topic: "Gemischt", text: "Kunde zahlt eine offene Rechnung über Bank (die Rechnung war inkl. MWST gebucht).", amount: 2154,
-      solutions: [{ soll:["Bank"], haben:["Forderungen LL"], amount:2154,
-        hint:"Beim Zahlungseingang selbst keine neue MWST-Aufteilung. Du löschst nur die Forderung.",
-        explain:"Die MWST wurde beim Verkauf gebucht. Jetzt: Bank an Forderungen." }]
-    },
-    { level: 3, topic: "Gemischt", text: "Du bezahlst eine offene Lieferantenrechnung über Bank (die Rechnung war inkl. MWST gebucht).", amount: 861.6,
-      solutions: [{ soll:["Verbindlichkeiten LL"], haben:["Bank"], amount:861.6,
-        hint:"Beim Bezahlen: nur Verbindlichkeit ausgleichen, keine neue Vorsteuerbuchung.",
-        explain:"Vorsteuer wurde beim Einkauf gebucht. Jetzt: Verbindlichkeiten an Bank." }]
-    },
+    // Level 3
+    { level: 3, topic: "Bestand", text: "Bestandeszunahme: Warenbestand am Jahresende ist höher (Bestand steigt).", amount: 700,
+      solutions: [{ soll:["Warenbestand"], haben:["Wareneinkauf"], amount:700,
+        hint:"Bestand steigt (Aktiv +) → Soll. Gegenkonto korrigiert Wareneinkauf/Aufwand → Haben.",
+        explain:"Bestandeszunahme: Warenbestand an Wareneinkauf (reduziert den Aufwand)." }] },
+    { level: 3, topic: "Bestand", text: "Bestandesabnahme: Warenbestand am Jahresende ist tiefer (Bestand sinkt).", amount: 500,
+      solutions: [{ soll:["Wareneinkauf"], haben:["Warenbestand"], amount:500,
+        hint:"Bestand sinkt → Warenbestand im Haben. Aufwand steigt → Wareneinkauf im Soll.",
+        explain:"Bestandesabnahme: Wareneinkauf an Warenbestand." }] },
+    { level: 3, topic: "Abschluss (Übungsmodell)", text: "Abschlussbuchung (Übungsmodell): Wareneinkauf wird gegen Warenverkauf abgeschlossen.", amount: 4200,
+      solutions: [{ soll:["Warenverkauf"], haben:["Wareneinkauf"], amount:4200,
+        hint:"In manchen Schulmodellen werden Wareneinkauf und Warenverkauf gegeneinander abgeschlossen (als Übung).",
+        explain:"Übungsmodell: Warenverkauf an Wareneinkauf." }] },
+    { level: 3, topic: "Begriffe", text: "Direkte Auszahlung einer kleinen Erlösminderung bar (z.B. Nachlass sofort).", amount: 50,
+      solutions: [{ soll:["Erlösminderungen"], haben:["Kasse"], amount:50,
+        hint:"Erlösminderung (Soll), Kasse sinkt (Haben).",
+        explain:"Erlösminderungen an Kasse." }] },
   ];
 
-  const state = {
-    running: false,
-    level: 1,
-    mode: "infinite",
-    maxN: null,
-    queue: [],
-    current: null,
-    score: 0,
-    streak: 0,
-    attempts: 0,
-    correct: 0,
-    wrong: 0,
-    seen: 0,
-    log: []
-  };
+  const state = {running:false, level:"1", mode:"infinite", maxN:null, queue:[], current:null,
+    score:0, streak:0, attempts:0, correct:0, wrong:0, seen:0, log:[]};
 
   function pickQuestions(levelSel){
-    let pool = [];
-    if(levelSel === "mix"){
-      pool = Q.slice();
-    } else {
-      const lvl = Number(levelSel);
-      pool = Q.filter(q => q.level === lvl);
-    }
-    for(let i=pool.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
+    let pool = (levelSel === "mix") ? Q.slice() : Q.filter(q => String(q.level) === String(levelSel));
+    for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
     return pool;
-  }
-
-  function currentExpectedLines(q){
-    const sol = q.solutions[0];
-    const amount = sol.amount != null ? chf(sol.amount) : "(ohne Betrag)";
-    const soll = sol.soll.join(" + ");
-    const haben = sol.haben.join(" + ");
-    return `${soll} an ${haben}, ${amount}\n\nErklärung: ${sol.explain}`;
-  }
-
-  function setQuestionUI(q){
-    $("tagTopic").textContent = q.topic;
-    $("qText").textContent = q.text;
-    $("qAmountWrap").style.display = q.amount != null ? "" : "none";
-    $("qAmount").textContent = q.amount != null ? chf(q.amount) : "";
-    $("btnNext").disabled = true;
-    $("btnCheck").disabled = false;
-    $("btnHint").disabled = false;
-    $("btnShowSolution").disabled = false;
-    $("btnSkip").disabled = false;
-    $("answer").value = "";
-    $("answer").focus();
-
-    const total = state.maxN ? state.maxN : "∞";
-    $("metaProgress").textContent = `${state.seen}/${total}`;
-    $("pillLevel").textContent = (state.level === "mix") ? "Mix" : String(state.level);
-  }
-
-  function endSession(){
-    state.running = false;
-    $("qText").textContent = "Session beendet. Du kannst Reset drücken oder dein Ergebnis kopieren.";
-    $("qAmountWrap").style.display = "none";
-    $("tagTopic").textContent = "Fertig";
-    $("metaProgress").textContent = `${state.seen}/${state.seen}`;
-    $("btnNext").disabled = true;
-    $("btnCheck").disabled = true;
-    $("btnHint").disabled = true;
-    $("btnShowSolution").disabled = true;
-    $("btnSkip").disabled = true;
-    $("answer").value = "";
-    showFeedback("good", "Auswertung",
-      `Versuche: ${state.attempts} · Korrekt: ${state.correct} · Falsch: ${state.wrong} · Genauigkeit: ${state.attempts?Math.round(state.correct/state.attempts*100):0}% · Score: ${state.score}`,
-      "Export über „Ergebnis kopieren“.",
-      "—");
-    $("exportInfo").style.display = "block";
-    $("exportInfo").textContent = "Export kopiert einen JSON-Log in die Zwischenablage.";
-  }
-
-  function nextQuestion(fromReset=false){
-    if(state.maxN && state.seen >= state.maxN){
-      endSession();
-      return;
-    }
-    if(state.queue.length === 0){
-      state.queue = pickQuestions(state.level);
-    }
-    state.current = state.queue.pop();
-    state.seen = fromReset ? 1 : (state.seen + 1);
-    setQuestionUI(state.current);
   }
 
   function updateKPIs(){
@@ -777,6 +380,7 @@
     $("kpiWrong").textContent = state.wrong;
     const acc = state.attempts ? Math.round((state.correct/state.attempts)*100) : 0;
     $("pillAcc").textContent = `${acc}%`;
+    $("pillLevel").textContent = (state.level === "mix") ? "Mix" : String(state.level);
   }
 
   function showFeedback(kind, headline, text, expected, parsed){
@@ -787,11 +391,61 @@
     $("fbExpected").textContent = expected;
     $("fbParsed").textContent = parsed;
   }
-  function hideFeedback(){
-    $("feedback").className = "feedback";
+  function hideFeedback(){ $("feedback").className = "feedback"; }
+
+  function expectedLines(q){
+    return q.solutions.map(sol=>{
+      const soll = sol.soll.join(" + ");
+      const haben = sol.haben.join(" + ");
+      const amt = (sol.amount != null) ? chf(sol.amount) : "(ohne Betrag)";
+      return `• ${soll} an ${haben}, ${amt}`;
+    }).join("\n");
   }
 
-  function checkAnswer(forcedShowSolution=false){
+  function setQuestionUI(q){
+    $("tagTopic").textContent = q.topic;
+    $("qText").textContent = q.text;
+    $("qAmountWrap").style.display = (q.amount != null) ? "" : "none";
+    $("qAmount").textContent = (q.amount != null) ? chf(q.amount) : "";
+    $("btnNext").disabled = true;
+    $("btnCheck").disabled = false;
+    $("btnHint").disabled = false;
+    $("btnShowSolution").disabled = false;
+    $("btnSkip").disabled = false;
+    $("answer").value = "";
+    $("answer").focus();
+    const total = state.maxN ? state.maxN : "∞";
+    $("metaProgress").textContent = `${state.seen}/${total}`;
+  }
+
+  function nextQuestion(fromReset=false){
+    if(state.maxN && state.seen >= state.maxN){ endSession(); return; }
+    if(state.queue.length === 0) state.queue = pickQuestions(state.level);
+    state.current = state.queue.pop();
+    state.seen = fromReset ? 1 : (state.seen + 1);
+    setQuestionUI(state.current);
+  }
+
+  function endSession(){
+    state.running = false;
+    $("qText").textContent = "Session beendet. Reset drücken, wenn du noch mehr Buchungssätze willst.";
+    $("qAmountWrap").style.display = "none";
+    $("tagTopic").textContent = "Fertig";
+    $("metaProgress").textContent = `${state.seen}/${state.seen}`;
+    $("btnNext").disabled = true;
+    $("btnCheck").disabled = true;
+    $("btnHint").disabled = true;
+    $("btnShowSolution").disabled = true;
+    $("btnSkip").disabled = true;
+    $("answer").value = "";
+    showFeedback("good","Auswertung",
+      `Versuche: ${state.attempts} · Korrekt: ${state.correct} · Falsch: ${state.wrong} · Genauigkeit: ${state.attempts?Math.round(state.correct/state.attempts*100):0}% · Score: ${state.score}`,
+      "Export über „Ergebnis kopieren“.","—");
+    $("exportInfo").style.display = "block";
+    $("exportInfo").textContent = "Export kopiert einen JSON-Log in die Zwischenablage.";
+  }
+
+  function checkAnswer(forceSolution=false){
     const q = state.current;
     const raw = $("answer").value;
     const parsed = parseAnswer(raw);
@@ -802,17 +456,8 @@
       `Betrag: ${parsed.amount != null ? chf(parsed.amount) : "(kein Betrag gefunden)"}`
     ].join("\n");
 
-    const expectedLines = q.solutions.map(sol => {
-      const soll = sol.soll.join(" + ");
-      const haben = sol.haben.join(" + ");
-      const amt = sol.amount != null ? chf(sol.amount) : "(ohne Betrag)";
-      return `• ${soll} an ${haben}, ${amt}`;
-    }).join("\n");
-
-    if(forcedShowSolution){
-      showFeedback("warn", "Lösung",
-        q.solutions[0].explain,
-        expectedLines, prettyParsed);
+    if(forceSolution){
+      showFeedback("warn","Lösung", q.solutions[0].explain, expectedLines(q), prettyParsed);
       $("btnNext").disabled = false;
       $("btnCheck").disabled = true;
       $("btnHint").disabled = true;
@@ -821,106 +466,60 @@
 
     state.attempts += 1;
 
-    let ok = false;
-    let amountOk = false;
-    let bestExplain = q.solutions[0].explain;
-    let bestHint = q.solutions[0].hint;
+    let ok=false, amountOk=false;
+    let bestExplain=q.solutions[0].explain, bestHint=q.solutions[0].hint;
 
     for(const sol of q.solutions){
       const accountsOk = sameMultiset(parsed.soll, sol.soll) && sameMultiset(parsed.haben, sol.haben);
       const amtExpected = sol.amount;
       const amtGiven = parsed.amount;
       const amtOk = (amtExpected == null) || (amtGiven != null && Math.abs(amtGiven - amtExpected) < 0.01);
-      if(accountsOk && amtOk){
-        ok = true; amountOk = true; bestExplain = sol.explain; bestHint = sol.hint; break;
-      }
-      if(accountsOk && !amtOk){
-        ok = true; amountOk = false; bestExplain = sol.explain; bestHint = sol.hint;
-      }
+      if(accountsOk && amtOk){ ok=true; amountOk=true; bestExplain=sol.explain; bestHint=sol.hint; break; }
+      if(accountsOk && !amtOk){ ok=true; amountOk=false; bestExplain=sol.explain; bestHint=sol.hint; }
     }
 
     if(ok && amountOk){
-      state.correct += 1;
-      state.streak += 1;
+      state.correct += 1; state.streak += 1;
       state.score += 10 + Math.min(10, state.streak);
       state.log.push({q:q.text, amount:q.amount, result:"korrekt", input:raw});
-      showFeedback("good", "Korrekt", bestExplain, expectedLines, prettyParsed);
-      $("btnNext").disabled = false;
-      $("btnCheck").disabled = true;
-      $("btnHint").disabled = true;
+      showFeedback("good","Korrekt", bestExplain, expectedLines(q), prettyParsed);
+      $("btnNext").disabled = false; $("btnCheck").disabled = true; $("btnHint").disabled = true;
     } else if(ok && !amountOk){
-      state.wrong += 1;
-      state.streak = 0;
-      state.score = Math.max(0, state.score - 3);
+      state.wrong += 1; state.streak = 0; state.score = Math.max(0, state.score - 3);
       state.log.push({q:q.text, amount:q.amount, result:"fast (Betrag)", input:raw});
-      showFeedback("warn", "Fast. Konten stimmen, Betrag nicht.",
-        "Konten sind richtig, aber der Betrag passt nicht (oder fehlt). " + bestExplain,
-        expectedLines, prettyParsed);
-      $("btnNext").disabled = false;
-      $("btnCheck").disabled = true;
-      $("btnHint").disabled = true;
+      showFeedback("warn","Fast. Konten stimmen, Betrag nicht.",
+        "Konten sind richtig, aber Betrag fehlt/ist falsch. " + bestExplain, expectedLines(q), prettyParsed);
+      $("btnNext").disabled = false; $("btnCheck").disabled = true; $("btnHint").disabled = true;
     } else {
-      state.wrong += 1;
-      state.streak = 0;
-      state.score = Math.max(0, state.score - 5);
+      state.wrong += 1; state.streak = 0; state.score = Math.max(0, state.score - 5);
       state.log.push({q:q.text, amount:q.amount, result:"falsch", input:raw});
-      showFeedback("bad", "Nicht korrekt",
-        "Kurzdiagnose: Soll/Haben oder Konten verdreht. " + (bestHint || ""),
-        expectedLines, prettyParsed);
+      showFeedback("bad","Nicht korrekt","Soll/Haben oder Konten verdreht. " + (bestHint||""), expectedLines(q), prettyParsed);
     }
-
     updateKPIs();
   }
 
   function hint(){
     const q = state.current;
-    showFeedback("warn", "Tipp", q.solutions[0].hint,
-      q.solutions.map(sol=>{
-        const soll = sol.soll.join(" + ");
-        const haben = sol.haben.join(" + ");
-        const amt = sol.amount != null ? chf(sol.amount) : "(ohne Betrag)";
-        return `• ${soll} an ${haben}, ${amt}`;
-      }).join("\n"),
-      "Noch nichts geprüft.");
+    showFeedback("warn","Tipp", q.solutions[0].hint, expectedLines(q), "Noch nichts geprüft.");
   }
 
   function skip(){
-    state.attempts += 1;
-    state.wrong += 1;
-    state.streak = 0;
-    state.score = Math.max(0, state.score - 2);
+    state.attempts += 1; state.wrong += 1; state.streak = 0; state.score = Math.max(0, state.score - 2);
     state.log.push({q:state.current.text, amount:state.current.amount, result:"skip", input:""});
     updateKPIs();
-    showFeedback("warn", "Übersprungen",
-      "Du hast die Aufgabe übersprungen. Hier ist die Lösung:",
-      currentExpectedLines(state.current),
-      "(kein Input)");
-    $("btnNext").disabled = false;
-    $("btnCheck").disabled = true;
-    $("btnHint").disabled = true;
+    showFeedback("warn","Übersprungen","Du hast übersprungen. Lösung:", expectedLines(state.current), "(kein Input)");
+    $("btnNext").disabled = false; $("btnCheck").disabled = true; $("btnHint").disabled = true;
   }
 
   async function exportResults(){
-    const payload = {
-      createdAt: new Date().toISOString(),
-      level: state.level,
-      mode: state.mode,
-      score: state.score,
-      attempts: state.attempts,
-      correct: state.correct,
-      wrong: state.wrong,
-      accuracy: state.attempts ? (state.correct/state.attempts) : 0,
-      log: state.log
-    };
-    const txt = JSON.stringify(payload, null, 2);
-    try{
-      await navigator.clipboard.writeText(txt);
-      $("exportInfo").style.display = "block";
-      $("exportInfo").textContent = "Ergebnis in die Zwischenablage kopiert.";
+    const payload = {createdAt:new Date().toISOString(), level:state.level, mode:state.mode, score:state.score,
+      attempts:state.attempts, correct:state.correct, wrong:state.wrong, accuracy:state.attempts?(state.correct/state.attempts):0, log:state.log};
+    const txt = JSON.stringify(payload,null,2);
+    try{ await navigator.clipboard.writeText(txt);
+      $("exportInfo").style.display="block"; $("exportInfo").textContent="Ergebnis in die Zwischenablage kopiert.";
     }catch(e){
-      $("exportInfo").style.display = "block";
-      $("exportInfo").textContent = "Konnte nicht kopieren. Browser halt.";
-      showFeedback("warn", "Export (manuell)", "Kopiere den folgenden Text:", txt, "—");
+      $("exportInfo").style.display="block"; $("exportInfo").textContent="Konnte nicht kopieren. Browser halt.";
+      showFeedback("warn","Export (manuell)","Kopiere den folgenden Text:", txt, "—");
     }
   }
 
@@ -928,17 +527,11 @@
     state.running = true;
     state.level = $("levelSel").value;
     state.mode = $("modeSel").value;
-    state.maxN = state.mode === "set10" ? 10 : state.mode === "set20" ? 20 : null;
-    state.score = 0;
-    state.streak = 0;
-    state.attempts = 0;
-    state.correct = 0;
-    state.wrong = 0;
-    state.seen = 0;
-    state.log = [];
+    state.maxN = (state.mode === "set10") ? 10 : (state.mode === "set20") ? 20 : null;
+    state.score=0; state.streak=0; state.attempts=0; state.correct=0; state.wrong=0; state.seen=0; state.log=[];
     state.queue = pickQuestions(state.level);
     hideFeedback();
-    $("exportInfo").style.display = "none";
+    $("exportInfo").style.display="none";
     updateKPIs();
     nextQuestion(true);
   }
@@ -948,11 +541,7 @@
   $("btnHint").addEventListener("click", hint);
   $("btnShowSolution").addEventListener("click", ()=>checkAnswer(true));
   $("btnSkip").addEventListener("click", skip);
-  $("btnNext").addEventListener("click", ()=>{
-    hideFeedback();
-    nextQuestion(false);
-    updateKPIs();
-  });
+  $("btnNext").addEventListener("click", ()=>{ hideFeedback(); nextQuestion(false); updateKPIs(); });
   $("btnExport").addEventListener("click", exportResults);
 
   $("answer").addEventListener("keydown", (e)=>{
